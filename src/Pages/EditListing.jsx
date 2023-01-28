@@ -103,7 +103,7 @@ function EditListing() {
     e.preventDefault();
     setLoading(true);
 
-    if (discountedPrice >= regularPrice) {
+    if (+discountedPrice >= +regularPrice) {
       setLoading(false);
       toast.error("Discounted Price must be less than Regular Price");
       return;
@@ -120,14 +120,15 @@ function EditListing() {
 
     if (geolocationEnabled) {
       const response = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_GEOCODE_API_KEY}&query=${address}`
+        `https://api.geoapify.com/v1/geocode/search?text=${address}&format=json&apiKey=${process.env.REACT_APP_GEOCODE_API_KEY}`
       );
 
       const info = await response.json();
+      geolocation.lat = info.results[0]?.lat ?? 0;
+      geolocation.lng = info.results[0]?.lon ?? 0;
 
-      geolocation.lat = info.data[0]?.latitude ?? 0;
-      geolocation.lng = info.data[0]?.longitude ?? 0;
-      location = info.data.length === 0 ? undefined : info.data[0]?.label;
+      location =
+        info.results.length === 0 ? undefined : info.results[0]?.formatted;
       if (location === undefined || location.includes("undefined")) {
         setLoading(false);
         toast.warn("Please enter a correct address");
